@@ -1,0 +1,36 @@
+-- Step 1: Create a Sample Table
+CREATE TABLE SampleTable (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    data VARCHAR(255)
+);
+
+-- Step 2: Develop the Trigger to Prevent Duplicate Values
+DELIMITER //
+
+CREATE TRIGGER PreventDuplicateValues
+BEFORE INSERT ON SampleTable
+FOR EACH ROW
+BEGIN
+    DECLARE duplicateCount INT;
+
+    -- Check for duplicate values
+    SELECT COUNT(*) INTO duplicateCount
+    FROM SampleTable
+    WHERE data = NEW.data;
+
+    -- If duplicate is found, raise an error
+    IF duplicateCount > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Duplicate value detected. Insert not allowed.';
+    END IF;
+END//
+
+DELIMITER ;
+
+-- Step 3: Test the Trigger
+-- Try inserting unique values
+INSERT INTO SampleTable (data) VALUES ('Unique Value 1');
+INSERT INTO SampleTable (data) VALUES ('Unique Value 2');
+
+-- Try inserting a duplicate value
+INSERT INTO SampleTable (data) VALUES ('Unique Value 1'); -- This should raise an error
