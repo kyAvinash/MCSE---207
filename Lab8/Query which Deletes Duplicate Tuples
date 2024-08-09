@@ -1,0 +1,48 @@
+-- Step 1: Create a new database for the lab
+CREATE DATABASE Lab8;
+
+-- Step 2: Use the created database
+USE Lab8;
+
+-- Step 3: Create the Students table
+CREATE TABLE Students (
+    StudentID INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Age INT,
+    Course VARCHAR(50)
+);
+
+-- Step 4: Insert sample data into the Students table (including duplicate records)
+INSERT INTO Students (FirstName, LastName, Age, Course) VALUES
+('Avinash', 'Yadav', 20, 'Computer Science'),
+('Raj', 'Singh', 22, 'Mathematics'),
+('Avinash', 'Yadav', 20, 'Computer Science'), -- Duplicate
+('Neha', 'Rai', 23, 'Physics'),
+('Bob', 'Johnson', 21, 'Engineering'),
+('Raj', 'Singh', 22, 'Mathematics'), -- Duplicate
+('Neha', 'Rai', 23, 'Physics'); -- Duplicate
+
+-- Step 5: Display the table before deleting duplicates
+SELECT * FROM Students;
+
+-- Step 6: Identify and delete duplicate records using a Common Table Expression (CTE)
+WITH Duplicates AS (
+  SELECT 
+    StudentID, 
+    FirstName, 
+    LastName, 
+    Age, 
+    Course,
+    ROW_NUMBER() OVER(PARTITION BY FirstName, LastName, Age, Course ORDER BY StudentID) AS rn
+  FROM 
+    Students
+)
+
+DELETE FROM Students
+WHERE StudentID IN (
+  SELECT StudentID FROM Duplicates WHERE rn > 1
+);
+
+-- Step 7: Display the table after deleting duplicates
+SELECT * FROM Students;
